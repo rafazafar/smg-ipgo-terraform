@@ -92,6 +92,73 @@ terraform apply
 - RDS instances are placed in private subnets for enhanced security
 - All sensitive variables are marked as sensitive in Terraform
 
+## Application Deployment
+
+After the infrastructure is set up, you'll need to deploy both the Next.js and Spring Boot applications.
+
+### Next.js Application Deployment
+
+1. Build your Next.js app locally:
+```bash
+npm run build
+```
+
+2. Copy the application to the server (excluding node_modules and .next):
+```bash
+rsync -avz --exclude 'node_modules' --exclude '.next' ./ ec2-user@<server-ip>:/opt/nextjs/
+```
+
+3. SSH into the server and build:
+```bash
+ssh ec2-user@<server-ip>
+cd /opt/nextjs
+npm install
+npm run build
+```
+
+4. Start the service:
+```bash
+sudo systemctl start nextjs
+```
+
+### Spring Boot Application Deployment
+
+1. Build your Spring Boot application locally:
+```bash
+./mvnw clean package
+```
+
+2. Copy the JAR file to the server:
+```bash
+scp target/your-app.jar ec2-user@<server-ip>:/opt/springboot/app.jar
+```
+
+3. Start the service:
+```bash
+sudo systemctl start springboot
+```
+
+### Monitoring Services
+
+Check service status:
+```bash
+# For Next.js
+sudo systemctl status nextjs
+sudo journalctl -u nextjs -f
+
+# For Spring Boot
+sudo systemctl status springboot
+sudo journalctl -u springboot -f
+```
+
+### SSL Certificates
+
+The server is configured with Certbot for SSL. Certificates will auto-renew via a cron job.
+To force renewal:
+```bash
+sudo certbot renew
+```
+
 ## Maintenance
 
 To update the infrastructure:

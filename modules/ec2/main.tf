@@ -54,6 +54,12 @@ resource "aws_iam_role" "ec2_s3_access" {
   })
 }
 
+# Add SSM policy for Session Manager access
+resource "aws_iam_role_policy_attachment" "ssm" {
+  role       = aws_iam_role.ec2_s3_access.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
 resource "aws_iam_role_policy" "s3_access" {
   name = "${var.environment}-s3-access-policy"
   role = aws_iam_role.ec2_s3_access.id
@@ -111,14 +117,23 @@ resource "aws_instance" "app_server" {
               yum install -y python3-pip
               pip3 install certbot certbot-nginx
               
+              # Install Node.js 22.x
+              curl -fsSL https://rpm.nodesource.com/setup_22.x | bash -
+              yum install -y nodejs
+              
+              # Install PM2 globally
+              npm install -g pm2
+              
               # Install Java 17
               yum install -y java-17-amazon-corretto
               
               # Create directories for applications
-              mkdir -p /var/www/react-app
+              mkdir -p /opt/nextjs
               mkdir -p /opt/springboot
+              chmod 755 /opt/nextjs
+              chmod 755 /opt/springboot
               
-              # Configure Nginx for React and Spring Boot with SSL
+              # Configure Nginx for Next.js and Spring Boot with SSL
               cat > /etc/nginx/conf.d/default.conf <<'NGINX_CONF'
               server {
                   listen 80;
@@ -135,10 +150,14 @@ resource "aws_instance" "app_server" {
                   
                   # SSL configuration will be added by certbot
                   
-                  # React application
+                  # Next.js application
                   location / {
-                      root /var/www/react-app;
-                      try_files $uri $uri/ /index.html;
+                      proxy_pass http://localhost:3000;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade $http_upgrade;
+                      proxy_set_header Connection 'upgrade';
+                      proxy_set_header Host $host;
+                      proxy_cache_bypass $http_upgrade;
                   }
                   
                   # Spring Boot API
@@ -163,6 +182,25 @@ resource "aws_instance" "app_server" {
               # Add cronjob for automatic renewal
               echo "0 0,12 * * * root python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
               
+              # Create a systemd service for Next.js
+              cat > /etc/systemd/system/nextjs.service <<'NEXTJS_SERVICE'
+              [Unit]
+              Description=Next.js Application
+              After=network.target
+              
+              [Service]
+              Type=simple
+              User=root
+              WorkingDirectory=/opt/nextjs
+              Environment=NODE_ENV=production
+              ExecStart=/usr/bin/pm2 start npm --name "nextjs" -- start
+              ExecStop=/usr/bin/pm2 stop nextjs
+              Restart=always
+              
+              [Install]
+              WantedBy=multi-user.target
+              NEXTJS_SERVICE
+              
               # Create a systemd service for Spring Boot
               cat > /etc/systemd/system/springboot.service <<'SPRING_SERVICE'
               [Unit]
@@ -172,15 +210,50 @@ resource "aws_instance" "app_server" {
               [Service]
               Type=simple
               User=root
+              WorkingDirectory=/opt/springboot
               ExecStart=/usr/bin/java -jar /opt/springboot/app.jar
               SuccessExitStatus=143
+              Restart=always
               
               [Install]
               WantedBy=multi-user.target
               SPRING_SERVICE
               
-              # Reload systemd and enable the service
+              # Create deployment instructions for Spring Boot
+              cat > /opt/springboot/DEPLOY_INSTRUCTIONS.txt <<'INSTRUCTIONS'
+              To deploy the Spring Boot application:
+              1. Build your JAR file locally
+              2. Copy it to this server:
+                 scp target/your-app.jar ec2-user@<server-ip>:/opt/springboot/app.jar
+              3. Start the service:
+                 sudo systemctl start springboot
+              
+              The service is enabled to auto-start but needs the JAR file first.
+              INSTRUCTIONS
+
+              # Create deployment instructions for Next.js
+              cat > /opt/nextjs/DEPLOY_INSTRUCTIONS.txt <<'INSTRUCTIONS'
+              To deploy the Next.js application:
+              1. Build your Next.js app locally:
+                 npm run build
+              
+              2. Copy the entire app directory to the server:
+                 rsync -avz --exclude 'node_modules' --exclude '.next' ./ ec2-user@<server-ip>:/opt/nextjs/
+              
+              3. On the server, install dependencies and build:
+                 cd /opt/nextjs
+                 npm install
+                 npm run build
+              
+              4. Start the service:
+                 sudo systemctl start nextjs
+              
+              Note: The service is enabled to auto-start but needs the application code first.
+              INSTRUCTIONS
+              
+              # Reload systemd and enable services (but don't start them yet)
               systemctl daemon-reload
+              systemctl enable nextjs
               systemctl enable springboot
               EOF
 
