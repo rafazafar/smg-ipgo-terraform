@@ -62,6 +62,6 @@ variable "s3_bucket_name" {
 }
 
 variable "domain_name" {
-  description = "Domain name for Route 53"
+  description = "Domain name for Route 53 and SES"
   type        = string
 }

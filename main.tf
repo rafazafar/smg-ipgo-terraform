@@ -63,3 +63,22 @@ module "route53" {
   environment         = var.environment
   ec2_public_ip       = module.ec2.public_ip
 }
+
+# SES Configuration
+module "ses" {
+  source = "./modules/ses"
+  
+  domain_name = var.domain_name
+}
+
+# Outputs
+output "ses_smtp_username" {
+  description = "SMTP username for SES"
+  value       = module.ses.smtp_username
+}
+
+output "ses_smtp_password" {
+  description = "SMTP password for SES"
+  value       = module.ses.smtp_password
+  sensitive   = true
+}

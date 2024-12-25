@@ -11,5 +11,5 @@ db_password = "REPLACE_WITH_SECURE_PASSWORD"  # Replace with a secure password
 # S3 bucket name (must be globally unique across all AWS accounts)
 s3_bucket_name = "your-unique-bucket-name"
 
-# Domain name for Route 53
+# Domain name for Route 53 and SES
 domain_name = "your-domain-name.com"
