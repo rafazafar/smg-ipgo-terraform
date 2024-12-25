@@ -153,8 +153,21 @@ sudo journalctl -u springboot -f
 
 ### SSL Certificates
 
-The server is configured with Certbot for SSL. Certificates will auto-renew via a cron job.
-To force renewal:
+SSL setup should be done after DNS propagation is complete:
+
+1. Ensure your domain's DNS is pointing to the EC2 instance
+2. Wait for DNS propagation (usually 15-30 minutes, can take up to 48 hours)
+3. Verify DNS propagation:
+   ```bash
+   dig your-domain.com
+   ```
+
+4. Run Certbot:
+   ```bash
+   sudo certbot --nginx -d your-domain.com --agree-tos -m your-email@domain.com --redirect
+   ```
+
+Certbot will automatically add a renewal cron job. To manually force renewal:
 ```bash
 sudo certbot renew
 ```

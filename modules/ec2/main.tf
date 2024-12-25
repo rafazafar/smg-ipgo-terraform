@@ -176,11 +176,19 @@ resource "aws_instance" "app_server" {
               systemctl start nginx
               systemctl enable nginx
               
-              # Request SSL certificate
-              certbot --nginx -d ${var.domain_name} --non-interactive --agree-tos -m ${var.admin_email} --redirect
+              # Create SSL setup instructions
+              cat > /root/SSL_SETUP_INSTRUCTIONS.txt <<'SSL_INSTRUCTIONS'
+              Before setting up SSL:
+              1. Ensure DNS is pointing to this server (update Route53 or DNS provider)
+              2. Wait for DNS propagation (can take up to 48 hours, but usually 15-30 minutes)
+              3. Verify DNS propagation:
+                 dig ${var.domain_name}
               
-              # Add cronjob for automatic renewal
-              echo "0 0,12 * * * root python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
+              Then run:
+              sudo certbot --nginx -d ${var.domain_name} --agree-tos -m ${var.admin_email} --redirect
+              
+              The renewal cron job will be automatically added by certbot.
+              SSL_INSTRUCTIONS
               
               # Create a systemd service for Next.js
               cat > /etc/systemd/system/nextjs.service <<'NEXTJS_SERVICE'
