@@ -87,7 +87,17 @@ terraform apply
 
 ## Security Considerations
 
-- Database credentials should be managed securely and never committed to version control
+- Database credentials can be managed in two ways:
+  1. Directly in `terraform.tfvars` (not recommended for production)
+  2. Using AWS Secrets Manager (recommended for production)
+     ```bash
+     # Create a secret in AWS Secrets Manager
+     aws secretsmanager create-secret \
+       --name "production/database/credentials" \
+       --description "RDS credentials" \
+       --secret-string '{"username":"admin","password":"your-secure-password"}'
+     ```
+     The secret name should follow the pattern: `<environment>/database/credentials`
 - EC2 instances are placed in public subnets with appropriate security groups
 - RDS instances are placed in private subnets for enhanced security
 - All sensitive variables are marked as sensitive in Terraform

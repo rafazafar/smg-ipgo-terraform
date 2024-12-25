@@ -42,12 +42,14 @@ variable "db_name" {
 variable "db_username" {
   description = "Database username"
   type        = string
+  default     = null  # Can be retrieved from AWS Secrets Manager
 }
 
 variable "db_password" {
   description = "Database password"
   type        = string
   sensitive   = true
+  default     = null  # Can be retrieved from AWS Secrets Manager
 }
 
 variable "db_instance_class" {

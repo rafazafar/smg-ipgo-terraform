@@ -33,6 +33,19 @@ module "ec2" {
   s3_bucket_name      = var.s3_bucket_name
 }
 
+# Retrieve database credentials from AWS Secrets Manager
+data "aws_secretsmanager_secret" "db_credentials" {
+  name = "${var.environment}/database/credentials"
+}
+
+data "aws_secretsmanager_secret_version" "db_credentials" {
+  secret_id = data.aws_secretsmanager_secret.db_credentials.id
+}
+
+locals {
+  db_creds = jsondecode(data.aws_secretsmanager_secret_version.db_credentials.secret_string)
+}
+
 # RDS Configuration
 module "rds" {
   source = "./modules/rds"
@@ -41,8 +54,8 @@ module "rds" {
   private_subnet_ids     = module.vpc.private_subnet_ids
   environment           = var.environment
   database_name         = var.db_name
-  db_username           = var.db_username
-  db_password           = var.db_password
+  db_username           = coalesce(var.db_username, local.db_creds.username)
+  db_password           = coalesce(var.db_password, local.db_creds.password)
   instance_class        = var.db_instance_class
   ec2_security_group_id = module.ec2.security_group_id
 }
