@@ -106,8 +106,10 @@ resource "aws_instance" "app_server" {
               # Update system
               yum update -y
               
-              # Install nginx
+              # Install nginx and certbot
               yum install -y nginx
+              yum install -y python3-pip
+              pip3 install certbot certbot-nginx
               
               # Install Java 17
               yum install -y java-17-amazon-corretto
@@ -116,11 +118,22 @@ resource "aws_instance" "app_server" {
               mkdir -p /var/www/react-app
               mkdir -p /opt/springboot
               
-              # Configure Nginx for React and Spring Boot
+              # Configure Nginx for React and Spring Boot with SSL
               cat > /etc/nginx/conf.d/default.conf <<'NGINX_CONF'
               server {
                   listen 80;
-                  server_name _;
+                  server_name ${var.domain_name};
+                  
+                  location / {
+                      return 301 https://$host$request_uri;
+                  }
+              }
+
+              server {
+                  listen 443 ssl;
+                  server_name ${var.domain_name};
+                  
+                  # SSL configuration will be added by certbot
                   
                   # React application
                   location / {
@@ -143,6 +156,12 @@ resource "aws_instance" "app_server" {
               # Start and enable nginx
               systemctl start nginx
               systemctl enable nginx
+              
+              # Request SSL certificate
+              certbot --nginx -d ${var.domain_name} --non-interactive --agree-tos -m ${var.admin_email} --redirect
+              
+              # Add cronjob for automatic renewal
+              echo "0 0,12 * * * root python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew -q" | sudo tee -a /etc/crontab > /dev/null
               
               # Create a systemd service for Spring Boot
               cat > /etc/systemd/system/springboot.service <<'SPRING_SERVICE'

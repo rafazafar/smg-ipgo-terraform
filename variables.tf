@@ -62,6 +62,11 @@ variable "s3_bucket_name" {
 }
 
 variable "domain_name" {
-  description = "Domain name for Route 53 and SES"
+  description = "Domain name for the application"
+  type        = string
+}
+
+variable "admin_email" {
+  description = "Email address for Let's Encrypt notifications"
   type        = string
 }

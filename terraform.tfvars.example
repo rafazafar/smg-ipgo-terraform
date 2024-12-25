@@ -13,3 +13,6 @@ s3_bucket_name = "your-unique-bucket-name"
 
 # Domain name for Route 53 and SES
 domain_name = "your-domain-name.com"
+
+# Admin Email for Let's Encrypt
+admin_email = "your-email-address"

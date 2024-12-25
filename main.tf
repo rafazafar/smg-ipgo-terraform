@@ -31,6 +31,8 @@ module "ec2" {
   instance_type       = "t4g.medium"
   key_name            = var.key_name
   s3_bucket_name      = var.s3_bucket_name
+  domain_name         = var.domain_name
+  admin_email         = var.admin_email
 }
 
 # RDS Configuration
@@ -69,16 +71,4 @@ module "ses" {
   source = "./modules/ses"
   
   domain_name = var.domain_name
-}
-
-# Outputs
-output "ses_smtp_username" {
-  description = "SMTP username for SES"
-  value       = module.ses.smtp_username
-}
-
-output "ses_smtp_password" {
-  description = "SMTP password for SES"
-  value       = module.ses.smtp_password
-  sensitive   = true
 }

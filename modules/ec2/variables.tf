@@ -27,3 +27,13 @@ variable "instance_type" {
   description = "EC2 instance type"
   type        = string
 }
+
+variable "domain_name" {
+  description = "Domain name for the application"
+  type        = string
+}
+
+variable "admin_email" {
+  description = "Email address for Let's Encrypt notifications"
+  type        = string
+}
