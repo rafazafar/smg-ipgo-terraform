@@ -1,0 +1,15 @@
+# Required variables for IPGO Terraform deployment
+aws_region = "ap-northeast-1"
+
+# Name of your SSH key pair in AWS
+key_name = "your-key-pair-name"
+
+# Database credentials
+db_username = "admin"  # Replace with your desired database username
+db_password = "REPLACE_WITH_SECURE_PASSWORD"  # Replace with a secure password
+
+# S3 bucket name (must be globally unique across all AWS accounts)
+s3_bucket_name = "your-unique-bucket-name"
+
+# Domain name for Route 53
+domain_name = "your-domain-name.com"
