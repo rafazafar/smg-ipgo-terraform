@@ -33,13 +33,3 @@ resource "aws_iam_user_policy" "ses_smtp_policy" {
     ]
   })
 }
-
-# Output SMTP credentials
-output "smtp_username" {
-  value = aws_iam_access_key.ses_smtp_user.id
-}
-
-output "smtp_password" {
-  value     = aws_iam_access_key.ses_smtp_user.ses_smtp_password_v4
-  sensitive = true
-}

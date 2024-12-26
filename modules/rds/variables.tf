@@ -16,7 +16,7 @@ variable "private_subnet_ids" {
 variable "instance_class" {
   description = "The instance type of the RDS instance"
   type        = string
-  default     = "db.t3.micro"
+  default     = "db.t4g.medium"
 }
 
 variable "allocated_storage" {

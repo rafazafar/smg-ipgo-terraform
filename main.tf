@@ -28,7 +28,7 @@ module "ec2" {
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
   environment       = var.environment
-  instance_type     = "t4g.medium"
+  instance_type     = var.instance_type
   key_name          = var.key_name
   s3_bucket_name    = var.s3_bucket_name
   domain_name       = var.domain_name
@@ -57,18 +57,20 @@ module "s3" {
   environment = var.environment
 }
 
-# Route 53 Configuration
-module "route53" {
-  source = "./modules/route53"
-
-  domain_name   = var.domain_name
-  environment   = var.environment
-  ec2_public_ip = module.ec2.public_ip
-}
-
 # SES Configuration
 module "ses" {
   source = "./modules/ses"
 
   domain_name = var.domain_name
+}
+
+# Route 53 Configuration
+module "route53" {
+  source = "./modules/route53"
+
+  domain_name           = var.domain_name
+  environment           = var.environment
+  ec2_public_ip        = module.ec2.public_ip
+  ses_verification_token = module.ses.verification_token
+  ses_dkim_tokens       = module.ses.dkim_tokens
 }

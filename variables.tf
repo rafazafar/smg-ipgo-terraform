@@ -25,7 +25,7 @@ variable "availability_zones" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t4g.micro"
+  default     = "t4g.medium"
 }
 
 variable "key_name" {
@@ -53,7 +53,7 @@ variable "db_password" {
 variable "db_instance_class" {
   description = "RDS instance class"
   type        = string
-  default     = "db.tg4.medium"
+  default     = "db.t4g.medium"
 }
 
 variable "s3_bucket_name" {

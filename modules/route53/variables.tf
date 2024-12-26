@@ -4,11 +4,21 @@ variable "domain_name" {
 }
 
 variable "environment" {
-  description = "Environment tag value"
+  description = "Environment name for tagging"
   type        = string
 }
 
 variable "ec2_public_ip" {
-  description = "Public IP address of the EC2 instance"
+  description = "Public IP of the EC2 instance"
   type        = string
+}
+
+variable "ses_verification_token" {
+  description = "The verification token for SES domain verification"
+  type        = string
+}
+
+variable "ses_dkim_tokens" {
+  description = "The DKIM tokens for SES DKIM verification"
+  type        = list(string)
 }

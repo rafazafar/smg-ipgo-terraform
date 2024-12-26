@@ -74,7 +74,7 @@ terraform apply
 | environment | Environment name | production |
 | vpc_cidr | CIDR block for VPC | 10.0.0.0/16 |
 | availability_zones | List of AZs | ["ap-northeast-1a", "ap-northeast-1c", "ap-northeast-1d"] |
-| instance_type | EC2 instance type | t4g.micro |
+| instance_type | EC2 instance type | t4g.medium |
 | db_name | RDS database name | appdb |
 | db_instance_class | RDS instance class | db.t4g.medium |
 
