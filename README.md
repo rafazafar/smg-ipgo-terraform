@@ -77,6 +77,18 @@ terraform apply
 | instance_type | EC2 instance type | t4g.medium |
 | db_name | RDS database name | appdb |
 | db_instance_class | RDS instance class | db.t4g.medium |
+| domain_name | Domain name for Route53 and SES configuration | - |
+| admin_email | Admin email for notifications and certifications | - |
+
+### SES Configuration
+
+The SES module sets up:
+- Domain identity verification
+- DKIM configuration
+- SMTP user with appropriate IAM permissions
+- Integration with Route53 for automatic DNS record creation
+
+The SMTP credentials will be available in the Terraform outputs for use in your applications.
 
 ## Module Structure
 
@@ -84,6 +96,8 @@ terraform apply
 - `modules/ec2`: EC2 instance and security group configuration
 - `modules/rds`: RDS database configuration
 - `modules/s3`: S3 bucket configuration
+- `modules/ses`: SES email service configuration for sending emails
+- `modules/route53`: DNS configuration and SES domain verification
 
 ## Security Considerations
 
